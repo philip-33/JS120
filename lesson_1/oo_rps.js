@@ -5,24 +5,24 @@ Implement RPS using an Object Oriented structure
 
 /*
 OO RPS Bonus Features:
-Keeping Score up to 5: 
-High level overview: Currently the game loops 1 time and displays the winner.
-If keeping score up to 5 wins, the game will need to track the score for both 
-players and automatically end if 5 wins are reached by either player.
+---Keeping Score up to 5---
+  High level overview: Currently the game loops 1 time and displays the winner.
+  If keeping score up to 5 wins, the game will need to track the score for both 
+  players and automatically end if 5 wins are reached by either player.
 
-new object or state?
-  tracking the scores of each player seems like a state (PLAYER has a SCORE)
-    and also a method to get the score. These could be added to createPlayer().
-    score comparison would use a method, .getScore() 
-  a new 'score' object would need to track both players and have logic to   
-    increment win counts separately.
-  The separate scoreboard object could work...
-    but including the score and it's methods part of the createPlayer() object factory is a cleaner fit that requires less mental and technical overhead.
+    new object or state?
+      Tracking the scores of each player seems like a state (PLAYER has a SCORE)
+      A separate scoreboard object would work but would be more mental overhead.
 
-  Once the score can be kept, a looping structure based on the winning score 
-  can be included in the gameplay loop (which already exists). This Winning
-  Condition would naturally be part of the RPS game object itself since 
-  a GAME has a WINNING CONDITION.
+      Since a GAME has a WINNING CONDITION, it's natural to add the match limit 
+      (5) and condition checks to the main RPSGame object. Using state and 
+      condition checks for scoring appear simpler in this case.
+
+---Adding Lizard/Spock---
+  High level overview: A classic feature! Simple to implement on the surface...
+  x The random number that the computer chooses will need to be increased to 5
+  x Player logic will need provide and accept two more options.
+  x Checks for win conditions will need to be expanded.
 */
 
 const readline = require('readline-sync');
@@ -47,9 +47,10 @@ function createHuman() {
       let choice;
 
       while (true) {
-        console.log('Please choose rock, paper, or scissors:');
-        choice = readline.question();
-        if (['rock', 'paper', 'scissors'].includes(choice)) break;
+        console.log('Please choose rock, paper, scissors, lizard, or spock:');
+        choice = readline.question().toLowerCase();
+        if (['rock', 'paper', 'scissors', 'lizard', 'spock'].includes(choice))
+          break;
         console.log('Sorry, invalid choice.');
       }
       this.move = choice;
@@ -65,7 +66,7 @@ function createComputer() {
 
   let computerObject = {
     choose() {
-      const choices = ['rock', 'paper', 'scissors'];
+      const choices = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
       let randomIndex = Math.floor(Math.random() * choices.length);
       this.move = choices[randomIndex];
     },
@@ -111,15 +112,29 @@ const RPSGame = {
 
     if (
       (humanMove === 'rock' && computerMove === 'scissors') ||
+      (humanMove === 'rock' && computerMove === 'lizard') ||
       (humanMove === 'paper' && computerMove === 'rock') ||
-      (humanMove === 'scissors' && computerMove === 'paper')
+      (humanMove === 'paper' && computerMove === 'spock') ||
+      (humanMove === 'scissors' && computerMove === 'paper') ||
+      (humanMove === 'scissors' && computerMove === 'lizard') ||
+      (humanMove === 'lizard' && computerMove === 'paper') ||
+      (humanMove === 'lizard' && computerMove === 'spock') ||
+      (humanMove === 'spock' && computerMove === 'rock') ||
+      (humanMove === 'spock' && computerMove === 'scissors')
     ) {
       this.human.score++;
       console.log('You win!');
     } else if (
-      (humanMove === 'rock' && computerMove === 'paper') ||
-      (humanMove === 'paper' && computerMove === 'scissors') ||
-      (humanMove === 'scissors' && computerMove === 'rock')
+      (computerMove === 'rock' && humanMove === 'scissors') ||
+      (computerMove === 'rock' && humanMove === 'lizard') ||
+      (computerMove === 'paper' && humanMove === 'rock') ||
+      (computerMove === 'paper' && humanMove === 'spock') ||
+      (computerMove === 'scissors' && humanMove === 'paper') ||
+      (computerMove === 'scissors' && humanMove === 'lizard') ||
+      (computerMove === 'lizard' && humanMove === 'paper') ||
+      (computerMove === 'lizard' && humanMove === 'spock') ||
+      (computerMove === 'spock' && humanMove === 'rock') ||
+      (computerMove === 'spock' && humanMove === 'scissors')
     ) {
       this.computer.score++;
       console.log('Computer wins!');
