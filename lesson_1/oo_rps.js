@@ -23,12 +23,34 @@ OO RPS Bonus Features:
   x The random number that the computer chooses will need to be increased to 5
   x Player logic will need provide and accept two more options.
   x Checks for win conditions will need to be expanded.
+
+---Move history + history based computer moves---
+  These features are tightly linked and should be designed together.
+  x Store human and computer moves AND the winner from each round
+    (2d array? object with 3 arrays?)
+    (recomputing weights requires a method so an object is already necessary...)
+  x weights will need to be computed for each of the possibilities
+    (an object that stores the game history and calculates the associated 
+    weights for the computer to use?)
+
+obj = {
+  gameHistory = [[rock, paper, computer], 
+                [lizard, spock, human],
+                [scissors, scissors, tie]],
+  
+  baseWeightArray = ['rock','paper','lizard','scissors','spock'],
+  realWeightArray = null
+
+  calcWeights = function (), // when called, takes base array and pushes the
+    computer move for each computer win onto the array, stores the result in 
+    realWeightArray.
+  suggestMove = function (), // takes realWeightArray and 
+}
 */
 
 const readline = require('readline-sync');
 
 function createPlayer() {
-  //template object factory with components common to all players
   return {
     move: null,
     score: 0,
@@ -76,8 +98,6 @@ function createComputer() {
 }
 
 const RPSGame = {
-  // this data structure is an object that contains all
-  // game properties, rules, and logic.
   human: createHuman(),
   computer: createComputer(),
   winningScore: 5,
@@ -103,7 +123,6 @@ const RPSGame = {
   },
 
   mainGameLoop() {
-    //renamed so displayWinner() can just display the winner
     let humanMove = this.human.move;
     let computerMove = this.computer.move;
 
@@ -150,8 +169,6 @@ const RPSGame = {
   },
 
   play() {
-    // this specific method is the main game loop
-    // the 'game' doesn't 'start' until this method is called.
     this.displayWelcomeMessage();
     while (true) {
       this.human.choose();
