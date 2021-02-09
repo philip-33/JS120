@@ -25,27 +25,53 @@ OO RPS Bonus Features:
   x Checks for win conditions will need to be expanded.
 
 ---Move history + history based computer moves---
-  These features are tightly linked and should be designed together.
-  x Store human and computer moves AND the winner from each round
-    (2d array? object with 3 arrays?)
-    (recomputing weights requires a method so an object is already necessary...)
-  x weights will need to be computed for each of the possibilities
-    (an object that stores the game history and calculates the associated 
-    weights for the computer to use?)
+  These features seem tightly linked and should be designed together.
+  UPDATE: I was wrong. A full game history alone doesn't include the
+  necessary parts for a functional move suggestor.
+  Other UPDATE: The huge if statement to dermine who won based on moves
+    will need to be replaced with the much simpler global object of win
+    conditions used in the JS101 RPS solution for this to work
+  x History:
+    - scoreBoard object
+      HAS a display (UI)
+      HAS 2D array to store both moves and winner (comp, hume, tie) per round
+  x History-based moves homunculus
+    (Homunculus is a very very old term that can be construed to apply to AI)
+    - The homunculus is its own object, separate from the scoreboard
+    - The homunculus HAS a ledger of moves (this.homunculus.ledger?)
+      x the ledeger is an array. It is initialized with 2 of every move.
+        ['rock', 'rock', 'paper', 'paper', 'scissors', 'scissors', ...]
+    - The homunculus DOES 3 things:
+      x addWinningMoveToLedger() 
+        - the homunculus reads the last scoreboard entry
+        - if the computer won, add the computer's move to the ledger.
+        - if the human won, figure out what move *would* have won, and add that
+            value to the ledger (this is why the 'Other UPDATE' is necessary)
+      x calculateWeights(<ledger Array>)
+        - the hom. generates ratios for each possible move based on how many
+          times it appears in the ledger
+        - these ratios are collected into an object, and returned.
+        - weights = {'rock': 0.18, 'paper': 0.27, 'scissors': 0.18, etc. etc.}
+        - before returning this object, it is normalized.
+          x the next step requires that all ratios (weights) add to 1, so...
+          x the function adds the weights together, and subtracts that from 1
+          x the remaining value (usually 0.01) is added to the highest value
+            - similar to the idea of the 'angel's share' when aging alcohol
+            - any weight that is lost in division MUST be added back for the 
+                following weighted RNG function to work.
+          x once the weights are normalized, the weights Object is returned
+      x weightedRNG(<weights Object>)
+        - this function is small and well known. 
+            https://redstapler.co/javascript-weighted-random/
+        - it calculates a random number based on the weights provided
+        - this function will then return the associated move for the computer.
+  : the function call for this logic chain is simple to understand and doesn't 
+    require much modification of the already existing code.
 
-obj = {
-  gameHistory = [[rock, paper, computer], 
-                [lizard, spock, human],
-                [scissors, scissors, tie]],
-  
-  baseWeightArray = ['rock','paper','lizard','scissors','spock'],
-  realWeightArray = null
-
-  calcWeights = function (), // when called, takes base array and pushes the
-    computer move for each computer win onto the array, stores the result in 
-    realWeightArray.
-  suggestMove = function (), // takes realWeightArray and 
-}
+  computerMove = weightedRNG(calculateWeights(ledger))
+  : the ledger is the only permanently stored data
+    - the object containing the weights is created in calculateWeights and 
+      only exists until the weightedRNG function is complete.
 */
 
 const readline = require('readline-sync');
