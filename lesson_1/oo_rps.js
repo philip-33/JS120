@@ -33,8 +33,9 @@ OO RPS Bonus Features:
     conditions used in the JS101 RPS solution for this to work
   x History:
     - scoreBoard object
-      HAS a display (UI)
       HAS 2D array to store both moves and winner (comp, hume, tie) per round
+      HAS a display (UI)
+
   x History-based moves homunculus
     (Homunculus is a very very old term that can be construed to apply to AI)
     - The homunculus is its own object, separate from the scoreboard
@@ -88,10 +89,6 @@ function createPlayer() {
   return {
     move: null,
     score: 0,
-
-    getScore: function () {
-      return this.score;
-    },
   };
 }
 
@@ -128,6 +125,13 @@ function createComputer() {
 
   return Object.assign(playerObject, computerObject);
 }
+/*
+HAS 2D array to store both moves and winner (comp, hume, tie) per round
+HAS a display (UI)
+*/
+const scoreBoard = {
+  history: [],
+};
 
 const RPSGame = {
   human: createHuman(),
@@ -143,8 +147,8 @@ const RPSGame = {
   },
 
   displayWinner() {
-    let humanScore = this.human.getScore();
-    let computerScore = this.computer.getScore();
+    let humanScore = this.human.score;
+    let computerScore = this.computer.score;
     if (humanScore === 5) {
       console.log('Congratulations, you win the match!');
     } else if (computerScore === 5) {
@@ -154,13 +158,20 @@ const RPSGame = {
     }
   },
 
+  /*
+  moving maingameloop to the scoreboard allows same functionality?,
+  also allows for building a move history in one place,
+  also allows building a simple UI.
+  the homonculus can build the ledger from the scoreboard
+  */
   mainGameLoop() {
     let humanMove = this.human.move;
     let computerMove = this.computer.move;
 
     console.log(`You chose: ${this.human.move}`);
     console.log(`The computer chose: ${this.computer.move}`);
-
+    // the following should be a scoreBoard function that
+    // logs the result as part of the UI, and also updates the game history
     if (WINNING_COMBOS[humanMove].includes(computerMove)) {
       this.human.score++;
       console.log('You win!');
@@ -183,11 +194,11 @@ const RPSGame = {
     while (true) {
       this.human.choose();
       this.computer.choose();
-      this.mainGameLoop();
+      this.mainGameLoop(); // move to scoreboard object?
       console.log(
-        `Current scores: Human: ${this.human.getScore()}, Computer: ${this.computer.getScore()}`,
+        `Current scores: Human: ${this.human.score}, Computer: ${this.computer.score}`,
       );
-      if (this.human.getScore() === 5 || this.computer.getScore() === 5) break;
+      if (this.human.score === 5 || this.computer.score === 5) break;
       if (!this.playAgain()) break;
     }
     this.displayWinner();
