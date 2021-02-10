@@ -127,7 +127,7 @@ function createComputer() {
 }
 /*
 HAS 2D array to store both moves and winner (comp, hume, tie) per round
-HAS a display (UI)
+DOES a display (UI)
 */
 const scoreBoard = {
   history: [],
@@ -135,13 +135,21 @@ const scoreBoard = {
   displayWinner() {},
   compareMoves(humanMove, computerMove) {}, // returns [humMov,compMov,W/L/D]
   updateBoard(compareMovesArray) {},
-  displayWinner(humanScore, computerScore, winningScore) {},
+  showWinner(humanScore, computerScore, maxScore) {
+    if (humanScore === maxScore) {
+      console.log('Congratulations, you win the match!');
+    } else if (computerScore === maxScore) {
+      console.log('Sorry, the computer won this match.');
+    } else {
+      console.log('Match forefit, the computer wins.');
+    }
+  },
 };
 
 const RPSGame = {
   human: createHuman(),
   computer: createComputer(),
-  winningScore: 5, // first to 'n' wins, determined by game logic not scoreboard
+  maxScore: 5, // first to 'n' wins, determined by game logic not scoreboard
 
   displayWelcomeMessage() {
     console.log('Welcome to RPS!');
@@ -149,22 +157,6 @@ const RPSGame = {
 
   displayGoodbyeMessage() {
     console.log('Goodbye from RPS!');
-  },
-  // move displaywinner to scoreboard?
-  // yes, scoreboard is potentially for anything related to scores and UI.
-  // which is all this function does.
-  // scoreBoard.displayWinner(humanScore, computerScore, winningScore)?
-  // does it even need to be passed anything once written?
-  displayWinner() {
-    let humanScore = this.human.score;
-    let computerScore = this.computer.score;
-    if (humanScore === this.winningScore) {
-      console.log('Congratulations, you win the match!');
-    } else if (computerScore === this.winningScore) {
-      console.log('Sorry, the computer won this match.');
-    } else {
-      console.log('Match forefit, the computer wins.');
-    }
   },
 
   /*
@@ -212,11 +204,12 @@ const RPSGame = {
       );
       // can this if statement be moved to a scoreboard function?
       // yes, uses magic number. something like
-      // scoreBoard.matchWinCheck(humanScore, computerScore, winningScore)
+      // scoreBoard.matchWinCheck(humanScore, computerScore, maxScore)
       if (this.human.score === 5 || this.computer.score === 5) break;
       if (!this.playAgain()) break;
     }
-    this.displayWinner(); //will move to scoreboard
+
+    scoreBoard.showWinner(this.human.score, this.computer.score, this.maxScore);
     this.displayGoodbyeMessage();
   },
 };
