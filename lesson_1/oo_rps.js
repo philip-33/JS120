@@ -149,9 +149,9 @@ const RPSGame = {
   displayWinner() {
     let humanScore = this.human.score;
     let computerScore = this.computer.score;
-    if (humanScore === 5) {
+    if (humanScore === this.winningScore) {
       console.log('Congratulations, you win the match!');
-    } else if (computerScore === 5) {
+    } else if (computerScore === this.winningScore) {
       console.log('Sorry, the computer won this match.');
     } else {
       console.log('Match forefit, the computer wins.');
