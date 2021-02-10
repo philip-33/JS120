@@ -75,6 +75,7 @@ OO RPS Bonus Features:
 */
 
 const readline = require('readline-sync');
+const VALID_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
 
 function createPlayer() {
   return {
@@ -97,8 +98,7 @@ function createHuman() {
       while (true) {
         console.log('Please choose rock, paper, scissors, lizard, or spock:');
         choice = readline.question().toLowerCase();
-        if (['rock', 'paper', 'scissors', 'lizard', 'spock'].includes(choice))
-          break;
+        if (VALID_CHOICES.includes(choice)) break;
         console.log('Sorry, invalid choice.');
       }
       this.move = choice;
@@ -114,9 +114,8 @@ function createComputer() {
 
   let computerObject = {
     choose() {
-      const choices = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
-      let randomIndex = Math.floor(Math.random() * choices.length);
-      this.move = choices[randomIndex];
+      let randomIndex = Math.floor(Math.random() * VALID_CHOICES.length);
+      this.move = VALID_CHOICES[randomIndex];
     },
   };
 
