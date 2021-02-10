@@ -131,12 +131,17 @@ HAS a display (UI)
 */
 const scoreBoard = {
   history: [],
+
+  displayWinner() {},
+  compareMoves(humanMove, computerMove) {}, // returns [humMov,compMov,W/L/D]
+  updateBoard(compareMovesArray) {},
+  displayWinner(humanScore, computerScore, winningScore) {},
 };
 
 const RPSGame = {
   human: createHuman(),
   computer: createComputer(),
-  winningScore: 5,
+  winningScore: 5, // first to 'n' wins, determined by game logic not scoreboard
 
   displayWelcomeMessage() {
     console.log('Welcome to RPS!');
@@ -145,7 +150,11 @@ const RPSGame = {
   displayGoodbyeMessage() {
     console.log('Goodbye from RPS!');
   },
-
+  // move displaywinner to scoreboard?
+  // yes, scoreboard is potentially for anything related to scores and UI.
+  // which is all this function does.
+  // scoreBoard.displayWinner(humanScore, computerScore, winningScore)?
+  // does it even need to be passed anything once written?
   displayWinner() {
     let humanScore = this.human.score;
     let computerScore = this.computer.score;
@@ -159,19 +168,21 @@ const RPSGame = {
   },
 
   /*
-  moving maingameloop to the scoreboard allows same functionality?,
-  also allows for building a move history in one place,
+  move if statement of main game loop to scoreBoard.
+  also allows for building a move history on scoreboard,
   also allows building a simple UI.
+  logs the result as part of the UI, and also updates the game history
   the homonculus can build the ledger from the scoreboard
   */
   mainGameLoop() {
     let humanMove = this.human.move;
     let computerMove = this.computer.move;
-
+    // the following should be a scoreBoard function
+    // moving the whole function would require passing a lot.
+    // two nested functions: updateBoard(compareMoves(humanMove, computerMove))?
     console.log(`You chose: ${this.human.move}`);
     console.log(`The computer chose: ${this.computer.move}`);
-    // the following should be a scoreBoard function that
-    // logs the result as part of the UI, and also updates the game history
+
     if (WINNING_COMBOS[humanMove].includes(computerMove)) {
       this.human.score++;
       console.log('You win!');
@@ -194,14 +205,18 @@ const RPSGame = {
     while (true) {
       this.human.choose();
       this.computer.choose();
-      this.mainGameLoop(); // move to scoreboard object?
+      this.mainGameLoop(); // move to scoreboard object? partly.
+      // move log statement to scoreboard? yes.
       console.log(
         `Current scores: Human: ${this.human.score}, Computer: ${this.computer.score}`,
       );
+      // can this if statement be moved to a scoreboard function?
+      // yes, uses magic number. something like
+      // scoreBoard.matchWinCheck(humanScore, computerScore, winningScore)
       if (this.human.score === 5 || this.computer.score === 5) break;
       if (!this.playAgain()) break;
     }
-    this.displayWinner();
+    this.displayWinner(); //will move to scoreboard
     this.displayGoodbyeMessage();
   },
 };
