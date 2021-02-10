@@ -76,6 +76,13 @@ OO RPS Bonus Features:
 
 const readline = require('readline-sync');
 const VALID_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
+const WINNING_COMBOS = {
+  rock: ['scissors', 'lizard'],
+  paper: ['rock', 'spock'],
+  scissors: ['paper', 'lizard'],
+  lizard: ['paper', 'spock'],
+  spock: ['rock', 'scissors'],
+};
 
 function createPlayer() {
   return {
@@ -154,32 +161,10 @@ const RPSGame = {
     console.log(`You chose: ${this.human.move}`);
     console.log(`The computer chose: ${this.computer.move}`);
 
-    if (
-      (humanMove === 'rock' && computerMove === 'scissors') ||
-      (humanMove === 'rock' && computerMove === 'lizard') ||
-      (humanMove === 'paper' && computerMove === 'rock') ||
-      (humanMove === 'paper' && computerMove === 'spock') ||
-      (humanMove === 'scissors' && computerMove === 'paper') ||
-      (humanMove === 'scissors' && computerMove === 'lizard') ||
-      (humanMove === 'lizard' && computerMove === 'paper') ||
-      (humanMove === 'lizard' && computerMove === 'spock') ||
-      (humanMove === 'spock' && computerMove === 'rock') ||
-      (humanMove === 'spock' && computerMove === 'scissors')
-    ) {
+    if (WINNING_COMBOS[humanMove].includes(computerMove)) {
       this.human.score++;
       console.log('You win!');
-    } else if (
-      (computerMove === 'rock' && humanMove === 'scissors') ||
-      (computerMove === 'rock' && humanMove === 'lizard') ||
-      (computerMove === 'paper' && humanMove === 'rock') ||
-      (computerMove === 'paper' && humanMove === 'spock') ||
-      (computerMove === 'scissors' && humanMove === 'paper') ||
-      (computerMove === 'scissors' && humanMove === 'lizard') ||
-      (computerMove === 'lizard' && humanMove === 'paper') ||
-      (computerMove === 'lizard' && humanMove === 'spock') ||
-      (computerMove === 'spock' && humanMove === 'rock') ||
-      (computerMove === 'spock' && humanMove === 'scissors')
-    ) {
+    } else if (WINNING_COMBOS[computerMove].includes(humanMove)) {
       this.computer.score++;
       console.log('Computer wins!');
     } else {
