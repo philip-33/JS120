@@ -63,6 +63,7 @@ OO RPS Bonus Features:
           x once the weights are normalized, the weights Object is returned
       x weightedRNG(<weights Object>)
         - this function is small and well known. 
+        
             https://redstapler.co/javascript-weighted-random/
         - it calculates a random number based on the weights provided
         - this function will then return the associated move for the computer.
@@ -133,15 +134,26 @@ function createScoreBoard() {
   return {
     history: [], //homonculus will build leger from this
 
-    displayWinner() {},
+    displayWinner() {}, //remove?
     updateHistory(humanMove, computerMove, winner) {
       this.history.push([humanMove, computerMove, winner]);
     },
-
-    showCurrentScores(human, computer) {
-      console.log(`Current score: Human - ${human} | Computer - ${computer}`);
+    winsHuman() {
+      let winners = this.history.map((round) => round[2]);
+      return winners.filter((win) => win === 'human').length;
     },
-    matchWinCheck(humanScore, compScore, maxScore) {
+    winsComputer() {
+      let winners = this.history.map((round) => round[2]);
+      return winners.filter((win) => win === 'computer').length;
+    },
+    showCurrentScores() {
+      console.log(
+        `Current score:\nHuman - ${this.winsHuman()} vs. Computer - ${this.winsComputer()}\n`,
+      );
+    },
+    matchWinCheck(maxScore) {
+      humanScore = this.winsHuman();
+      compScore = this.winsComputer();
       if (humanScore === maxScore || compScore === maxScore) return true;
       else return false;
     },
@@ -182,14 +194,14 @@ const RPSGame = {
     if (WINNING_COMBOS[humanMove].includes(computerMove)) {
       this.human.score++;
       winner = 'human';
-      console.log('You win the round!');
+      console.log('\nYOU win the round!\n');
     } else if (WINNING_COMBOS[computerMove].includes(humanMove)) {
       this.computer.score++;
       winner = 'computer';
-      console.log('Computer wins the round!');
+      console.log('\nTHE COMPUTER wins the round!\n');
     } else {
       winner = 'tie';
-      console.log('This round is a tie');
+      console.log('\nThis round is a TIE\n');
     }
 
     this.board.updateHistory(humanMove, computerMove, winner);
@@ -204,18 +216,20 @@ const RPSGame = {
   play() {
     this.displayWelcomeMessage();
     while (true) {
+      console.clear();
       this.human.choose();
       this.computer.choose();
-      this.mainGameLoop();
-      let humanScore = this.human.score;
-      let compScore = this.computer.score;
 
-      this.board.showCurrentScores(humanScore, compScore);
-      console.log(this.board.history); //clean this up after testing
-      if (this.board.matchWinCheck(humanScore, compScore, this.maxScore)) break;
+      console.clear();
+      this.mainGameLoop();
+      this.board.showCurrentScores();
+
+      if (this.board.matchWinCheck(this.maxScore)) break;
       if (!this.playAgain()) break;
     }
 
+    console.clear();
+    console.log(this.board.history);
     this.board.showWinner(this.human.score, this.computer.score, this.maxScore);
     this.displayGoodbyeMessage();
   },
