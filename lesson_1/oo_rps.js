@@ -129,27 +129,39 @@ function createComputer() {
 HAS 2D array to store both moves and winner (comp, hume, tie) per round
 DOES a display (UI)
 */
-const scoreBoard = {
-  history: [],
+function createScoreBoard() {
+  return {
+    history: [], //homonculus will build leger from this
 
-  displayWinner() {},
-  compareMoves(humanMove, computerMove) {}, // returns [humMov,compMov,W/L/D]
-  updateBoard(compareMovesArray) {},
-  showWinner(humanScore, computerScore, maxScore) {
-    if (humanScore === maxScore) {
-      console.log('Congratulations, you win the match!');
-    } else if (computerScore === maxScore) {
-      console.log('Sorry, the computer won this match.');
-    } else {
-      console.log('Match forefit, the computer wins.');
-    }
-  },
-};
+    displayWinner() {},
+    updateHistory(humanMove, computerMove, winner) {
+      this.history.push([humanMove, computerMove, winner]);
+    },
+
+    showCurrentScores(human, computer) {
+      console.log(`Current score: Human - ${human} | Computer - ${computer}`);
+    },
+    matchWinCheck(humanScore, compScore, maxScore) {
+      if (humanScore === maxScore || compScore === maxScore) return true;
+      else return false;
+    },
+    showWinner(humanScore, computerScore, maxScore) {
+      if (humanScore === maxScore) {
+        console.log('Congratulations, you win the match!');
+      } else if (computerScore === maxScore) {
+        console.log('Sorry, the computer won this match.');
+      } else {
+        console.log('Match forefit, the computer wins.');
+      }
+    },
+  };
+}
 
 const RPSGame = {
   human: createHuman(),
   computer: createComputer(),
-  maxScore: 5, // first to 'n' wins, determined by game logic not scoreboard
+  board: createScoreBoard(), //this would keep everything local...
+  maxScore: 5, // first to 'n' wins
 
   displayWelcomeMessage() {
     console.log('Welcome to RPS!');
@@ -159,31 +171,28 @@ const RPSGame = {
     console.log('Goodbye from RPS!');
   },
 
-  /*
-  move if statement of main game loop to scoreBoard.
-  also allows for building a move history on scoreboard,
-  also allows building a simple UI.
-  logs the result as part of the UI, and also updates the game history
-  the homonculus can build the ledger from the scoreboard
-  */
   mainGameLoop() {
     let humanMove = this.human.move;
     let computerMove = this.computer.move;
-    // the following should be a scoreBoard function
-    // moving the whole function would require passing a lot.
-    // two nested functions: updateBoard(compareMoves(humanMove, computerMove))?
-    console.log(`You chose: ${this.human.move}`);
-    console.log(`The computer chose: ${this.computer.move}`);
+    let winner = '';
+
+    console.log(`You chose: ${humanMove}`);
+    console.log(`The computer chose: ${computerMove}`);
 
     if (WINNING_COMBOS[humanMove].includes(computerMove)) {
       this.human.score++;
-      console.log('You win!');
+      winner = 'human';
+      console.log('You win the round!');
     } else if (WINNING_COMBOS[computerMove].includes(humanMove)) {
       this.computer.score++;
-      console.log('Computer wins!');
+      winner = 'computer';
+      console.log('Computer wins the round!');
     } else {
-      console.log("It's a tie");
+      winner = 'tie';
+      console.log('This round is a tie');
     }
+
+    this.board.updateHistory(humanMove, computerMove, winner);
   },
 
   playAgain() {
@@ -197,19 +206,17 @@ const RPSGame = {
     while (true) {
       this.human.choose();
       this.computer.choose();
-      this.mainGameLoop(); // move to scoreboard object? partly.
-      // move log statement to scoreboard? yes.
-      console.log(
-        `Current scores: Human: ${this.human.score}, Computer: ${this.computer.score}`,
-      );
-      // can this if statement be moved to a scoreboard function?
-      // yes, uses magic number. something like
-      // scoreBoard.matchWinCheck(humanScore, computerScore, maxScore)
-      if (this.human.score === 5 || this.computer.score === 5) break;
+      this.mainGameLoop();
+      let humanScore = this.human.score;
+      let compScore = this.computer.score;
+
+      this.board.showCurrentScores(humanScore, compScore);
+      console.log(this.board.history); //clean this up after testing
+      if (this.board.matchWinCheck(humanScore, compScore, this.maxScore)) break;
       if (!this.playAgain()) break;
     }
 
-    scoreBoard.showWinner(this.human.score, this.computer.score, this.maxScore);
+    this.board.showWinner(this.human.score, this.computer.score, this.maxScore);
     this.displayGoodbyeMessage();
   },
 };
