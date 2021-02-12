@@ -89,7 +89,6 @@ const WINNING_COMBOS = {
 function createPlayer() {
   return {
     move: null,
-    score: 0,
   };
 }
 
@@ -111,7 +110,6 @@ function createHuman() {
   };
 
   return Object.assign(playerObject, humanObject);
-  //NOTE: Object.assign copies properties from arg1 (source) to arg2 (target)
 }
 
 function createComputer() {
@@ -126,41 +124,35 @@ function createComputer() {
 
   return Object.assign(playerObject, computerObject);
 }
-/*
-HAS 2D array to store both moves and winner (comp, hume, tie) per round
-DOES a display (UI)
-*/
+
 function createScoreBoard() {
   return {
-    history: [], //homonculus will build leger from this
+    history: [],
+    humanScore: 0,
+    computerScore: 0,
 
     displayWinner() {}, //remove?
-    updateHistory(humanMove, computerMove, winner) {
+    updateBoard(humanMove, computerMove, winner) {
       this.history.push([humanMove, computerMove, winner]);
-    },
-    winsHuman() {
-      let winners = this.history.map((round) => round[2]);
-      return winners.filter((win) => win === 'human').length;
-    },
-    winsComputer() {
-      let winners = this.history.map((round) => round[2]);
-      return winners.filter((win) => win === 'computer').length;
+      if (winner === 'human') this.humanScore++;
+      if (winner === 'computer') this.computerScore++;
     },
     showCurrentScores() {
+      console.log('Current score:');
       console.log(
-        `Current score:\nHuman - ${this.winsHuman()} vs. Computer - ${this.winsComputer()}\n`,
+        `\nHuman - ${this.humanScore} vs. Computer - ${this.computerScore}\n`,
       );
     },
     matchWinCheck(maxScore) {
-      humanScore = this.winsHuman();
-      compScore = this.winsComputer();
-      if (humanScore === maxScore || compScore === maxScore) return true;
+      if (this.humanScore === maxScore || this.computerScore === maxScore)
+        return true;
       else return false;
     },
-    showWinner(humanScore, computerScore, maxScore) {
-      if (humanScore === maxScore) {
+    displayHistory() {},
+    showWinner(maxScore) {
+      if (this.humanScore === maxScore) {
         console.log('Congratulations, you win the match!');
-      } else if (computerScore === maxScore) {
+      } else if (this.computerScore === maxScore) {
         console.log('Sorry, the computer won this match.');
       } else {
         console.log('Match forefit, the computer wins.');
@@ -172,8 +164,8 @@ function createScoreBoard() {
 const RPSGame = {
   human: createHuman(),
   computer: createComputer(),
-  board: createScoreBoard(), //this would keep everything local...
-  maxScore: 5, // first to 'n' wins
+  board: createScoreBoard(),
+  maxScore: 5, // game ends when a player reaches this score
 
   displayWelcomeMessage() {
     console.log('Welcome to RPS!');
@@ -192,11 +184,9 @@ const RPSGame = {
     console.log(`The computer chose: ${computerMove}`);
 
     if (WINNING_COMBOS[humanMove].includes(computerMove)) {
-      this.human.score++;
       winner = 'human';
       console.log('\nYOU win the round!\n');
     } else if (WINNING_COMBOS[computerMove].includes(humanMove)) {
-      this.computer.score++;
       winner = 'computer';
       console.log('\nTHE COMPUTER wins the round!\n');
     } else {
@@ -204,7 +194,7 @@ const RPSGame = {
       console.log('\nThis round is a TIE\n');
     }
 
-    this.board.updateHistory(humanMove, computerMove, winner);
+    this.board.updateBoard(humanMove, computerMove, winner);
   },
 
   playAgain() {
@@ -212,7 +202,7 @@ const RPSGame = {
     let answer = readline.question();
     return answer.toLowerCase()[0] === 'y';
   },
-
+  //game loop
   play() {
     this.displayWelcomeMessage();
     while (true) {
@@ -227,10 +217,10 @@ const RPSGame = {
       if (this.board.matchWinCheck(this.maxScore)) break;
       if (!this.playAgain()) break;
     }
-
+    //endgame
     console.clear();
-    console.log(this.board.history);
-    this.board.showWinner(this.human.score, this.computer.score, this.maxScore);
+    console.log(this.board.history); //testing
+    this.board.showWinner(this.maxScore);
     this.displayGoodbyeMessage();
   },
 };
