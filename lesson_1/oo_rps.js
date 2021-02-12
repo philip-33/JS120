@@ -148,14 +148,28 @@ function createScoreBoard() {
         return true;
       else return false;
     },
-    displayHistory() {},
+    displayHistory() {
+      console.log(
+        'Player move'.padEnd(15, ' ') +
+          'Computer move'.padEnd(18, ' ') +
+          'Winner'.padEnd(15, ' '),
+      );
+      console.log('='.repeat(45));
+      this.history.forEach((round) => {
+        console.log(
+          round[0].padEnd(15, ' ') +
+            round[1].padEnd(18, ' ') +
+            round[2].padEnd(15, ' '),
+        );
+      });
+    },
     showWinner(maxScore) {
       if (this.humanScore === maxScore) {
-        console.log('Congratulations, you win the match!');
+        console.log('\nCongratulations, you win the match!');
       } else if (this.computerScore === maxScore) {
-        console.log('Sorry, the computer won this match.');
+        console.log('\nSorry, the computer won this match.');
       } else {
-        console.log('Match forefit, the computer wins.');
+        console.log('\nMatch forefit, the computer wins.');
       }
     },
   };
@@ -165,7 +179,7 @@ const RPSGame = {
   human: createHuman(),
   computer: createComputer(),
   board: createScoreBoard(),
-  maxScore: 5, // game ends when a player reaches this score
+  maxScore: 5,
 
   displayWelcomeMessage() {
     console.log('Welcome to RPS!');
@@ -219,7 +233,7 @@ const RPSGame = {
     }
     //endgame
     console.clear();
-    console.log(this.board.history); //testing
+    this.board.displayHistory();
     this.board.showWinner(this.maxScore);
     this.displayGoodbyeMessage();
   },
