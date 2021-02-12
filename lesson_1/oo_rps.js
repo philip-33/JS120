@@ -24,22 +24,26 @@ OO RPS Bonus Features:
   x Player logic will need provide and accept two more options.
   x Checks for win conditions will need to be expanded.
 
----Move history + history based computer moves---
-  These features seem tightly linked and should be designed together.
-  UPDATE: I was wrong. A full game history alone doesn't include the
-  necessary parts for a functional move suggestor.
-  Other UPDATE: The huge if statement to dermine who won based on moves
-    will need to be replaced with the much simpler global object of win
-    conditions used in the JS101 RPS solution for this to work
+---Move history---
+  A 'Scoreboard' object would be a good place to hold a move history, and
+  would also be a good way to handle UI and certain parts of the game logic.
   x History:
-    - scoreBoard object
-      HAS 2D array to store both moves and winner (comp, hume, tie) per round
-      HAS a display (UI)
-
-  x History-based moves homunculus
-    (Homunculus is a very very old term that can be construed to apply to AI)
-    - The homunculus is its own object, separate from the scoreboard
-    - The homunculus HAS a ledger of moves (this.homunculus.ledger?)
+    - a new ScoreBoard object:
+      - tracks the history of all moves by both players and who won each round
+        x a 2D array [[humanMove, computerMove, roundWinner], ...]
+      - can also track scores directly, moving them out of the 'player' object.
+        x refactor is necessary
+      - Control parts of the UI by moving some score-related methods into it
+      - pretty table for displaying move history at the end of the game
+  x The scoreboard object is now the biggest because it is the main interface to
+    the game itself. Scores, all console output, and history are part of it.
+      
+---history based assistant for computer moves---
+  x A 'homunculus' (an archaic term that can be construed to apply to AI)
+    - The homunculus is only an assistant for the computer,
+      but has its own functions and variables, so it is its own object,
+      but is only ever called by computer player functions
+    - The homunculus HAS a ledger of moves (this.computer.assistant.ledger)
       x the ledeger is an array. It is initialized with 2 of every move.
         ['rock', 'rock', 'paper', 'paper', 'scissors', 'scissors', ...]
     - The homunculus DOES 3 things:
@@ -77,6 +81,7 @@ OO RPS Bonus Features:
 */
 
 const readline = require('readline-sync');
+const MAX_WINS = 5;
 const VALID_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
 const WINNING_COMBOS = {
   rock: ['scissors', 'lizard'],
@@ -89,6 +94,46 @@ const WINNING_COMBOS = {
 function createPlayer() {
   return {
     move: null,
+  };
+}
+function createHomunculus() {
+  return {
+    ledger: VALID_CHOICES.concat(VALID_CHOICES),
+    losingCombos: {
+      rock: ['paper', 'spock'],
+      paper: ['scissors', 'lizard'],
+      scissors: ['rock', 'spock'],
+      lizard: ['rock', 'scissors'],
+      spock: ['paper', 'lizard'],
+    },
+
+    addWinningMoveToLedger(lastMove) {
+      // lastMove = [humanMove, computerMove, winner]
+      if (lastMove[2] === 'computer') this.ledger.push(lastMove[1]);
+      else {
+        let bestMove = this.losingCombos[lastMove[0]];
+        this.ledger.push(bestMove[Math.round(Math.random())]);
+      }
+    },
+    calculateWeights() {
+      let weights = {
+        rock: 0.2,
+        paper: 0.2,
+        scissors: 0.2,
+        lizard: 0.2,
+        spock: 0.2,
+      };
+
+      return weights;
+    },
+    // https://redstapler.co/javascript-weighted-random/
+    weightedRNG(weightsObj) {
+      let sum = 0;
+      for (let value in weightsObj) {
+        sum += weightsObj[value];
+        if (Math.random() <= sum) return value;
+      }
+    },
   };
 }
 
@@ -116,9 +161,14 @@ function createComputer() {
   let playerObject = createPlayer();
 
   let computerObject = {
+    assistant: createHomunculus(),
+
     choose() {
-      let randomIndex = Math.floor(Math.random() * VALID_CHOICES.length);
-      this.move = VALID_CHOICES[randomIndex];
+      this.move = this.assistant.weightedRNG(this.assistant.calculateWeights());
+    },
+
+    checkLastMove(lastMoveArray) {
+      this.assistant.addWinningMoveToLedger(lastMoveArray);
     },
   };
 
@@ -131,10 +181,11 @@ function createScoreBoard() {
     humanScore: 0,
     computerScore: 0,
 
-    updateBoard(humanMove, computerMove, winner) {
+    updateBoard(lastMoveArray) {
+      let winner = lastMoveArray[2];
       if (winner === 'human') this.humanScore++;
       if (winner === 'computer') this.computerScore++;
-      this.history.push([humanMove, computerMove, winner]);
+      this.history.push(lastMoveArray);
     },
     showCurrentScores() {
       console.log('Current score:');
@@ -176,7 +227,7 @@ const RPSGame = {
   human: createHuman(),
   computer: createComputer(),
   board: createScoreBoard(),
-  maxScore: 5,
+  maxScore: MAX_WINS,
 
   displayWelcomeMessage() {
     console.log('Welcome to RPS!');
@@ -204,8 +255,9 @@ const RPSGame = {
       winner = 'tie';
       console.log('\nThis round is a TIE\n');
     }
-
-    this.board.updateBoard(humanMove, computerMove, winner);
+    let lastMove = [humanMove, computerMove, winner];
+    this.computer.checkLastMove(lastMove);
+    this.board.updateBoard(lastMove);
   },
 
   playAgain() {
@@ -217,16 +269,17 @@ const RPSGame = {
   play() {
     this.displayWelcomeMessage();
     while (true) {
-      console.clear();
       this.human.choose();
       this.computer.choose();
 
       console.clear();
       this.mainGameLoop();
       this.board.showCurrentScores();
+      console.log(this.computer.assistant.ledger); //testing
 
       if (this.board.matchWinCheck(this.maxScore)) break;
       if (!this.playAgain()) break;
+      console.clear();
     }
     //endgame
     console.clear();
