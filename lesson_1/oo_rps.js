@@ -123,7 +123,7 @@ function createHomunculus() {
         lizard: 0.2,
         spock: 0.2,
       };
-
+      // code to update weights goes here.
       return weights;
     },
     // https://redstapler.co/javascript-weighted-random/
