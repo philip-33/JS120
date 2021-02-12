@@ -131,11 +131,10 @@ function createScoreBoard() {
     humanScore: 0,
     computerScore: 0,
 
-    displayWinner() {}, //remove?
     updateBoard(humanMove, computerMove, winner) {
-      this.history.push([humanMove, computerMove, winner]);
       if (winner === 'human') this.humanScore++;
       if (winner === 'computer') this.computerScore++;
+      this.history.push([humanMove, computerMove, winner]);
     },
     showCurrentScores() {
       console.log('Current score:');
@@ -144,9 +143,7 @@ function createScoreBoard() {
       );
     },
     matchWinCheck(maxScore) {
-      if (this.humanScore === maxScore || this.computerScore === maxScore)
-        return true;
-      else return false;
+      return this.humanScore === maxScore || this.computerScore === maxScore;
     },
     displayHistory() {
       console.log(
