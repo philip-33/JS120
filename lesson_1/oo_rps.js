@@ -6,78 +6,43 @@ Implement RPS using an Object Oriented structure
 /*
 OO RPS Bonus Features:
 ---Keeping Score up to 5---
-  High level overview: Currently the game loops 1 time and displays the winner.
-  If keeping score up to 5 wins, the game will need to track the score for both 
-  players and automatically end if 5 wins are reached by either player.
-
-    new object or state?
-      Tracking the scores of each player seems like a state (PLAYER has a SCORE)
-      A separate scoreboard object would work but would be more mental overhead.
-
-      Since a GAME has a WINNING CONDITION, it's natural to add the match limit 
-      (5) and condition checks to the main RPSGame object. Using state and 
-      condition checks for scoring appear simpler in this case.
-
----Adding Lizard/Spock---
-  High level overview: A classic feature! Simple to implement on the surface...
-  x The random number that the computer chooses will need to be increased to 5
-  x Player logic will need provide and accept two more options.
-  x Checks for win conditions will need to be expanded.
+  The individual scores for both players are tracked by a 'scoreboard' object,
+  which has several functions used by other bonus features. 5 wins is arbitrary, so this component was factored out to a global variable.
+  
+  ---Adding Lizard/Spock---
+  Adding two additional moves increases the complexity of checking for the
+  winning move. This check was converted from a multi-line if/or monster to
+  a key/value lookup.
+  x This does not require new code, just extending the existing code.
 
 ---Move history---
-  A 'Scoreboard' object would be a good place to hold a move history, and
-  would also be a good way to handle UI and certain parts of the game logic.
-  x History:
-    - a new ScoreBoard object:
-      - tracks the history of all moves by both players and who won each round
-        x a 2D array [[humanMove, computerMove, roundWinner], ...]
-      - can also track scores directly, moving them out of the 'player' object.
-        x refactor is necessary
-      - Control parts of the UI by moving some score-related methods into it
-      - pretty table for displaying move history at the end of the game
-  x The scoreboard object is now the biggest because it is the main interface to
-    the game itself. Scores, all console output, and history are part of it.
-      
----history based assistant for computer moves---
-  x A 'homunculus' (an archaic term that can be construed to apply to AI)
-    - The homunculus is only an assistant for the computer,
-      but has its own functions and variables, so it is its own object,
-      but is only ever called by computer player functions
-    - The homunculus HAS a ledger of moves (this.computer.assistant.ledger)
-      x the ledeger is an array. It is initialized with 2 of every move.
-        ['rock', 'rock', 'paper', 'paper', 'scissors', 'scissors', ...]
-    - The homunculus DOES 3 things:
-      x addWinningMoveToLedger() 
-        - the homunculus reads the last scoreboard entry
-        - if the computer won, add the computer's move to the ledger.
-        - if the human won, figure out what move *would* have won, and add that
-            value to the ledger (this is why the 'Other UPDATE' is necessary)
-      x calculateWeights(<ledger Array>)
-        - the hom. generates ratios for each possible move based on how many
-          times it appears in the ledger
-        - these ratios are collected into an object, and returned.
-        - weights = {'rock': 0.18, 'paper': 0.27, 'scissors': 0.18, etc. etc.}
-        - before returning this object, it is normalized.
-          x the next step requires that all ratios (weights) add to 1, so...
-          x the function adds the weights together, and subtracts that from 1
-          x the remaining value (usually 0.01) is added to the highest value
-            - similar to the idea of the 'angel's share' when aging alcohol
-            - any weight that is lost in division MUST be added back for the 
-                following weighted RNG function to work.
-          x once the weights are normalized, the weights Object is returned
-      x weightedRNG(<weights Object>)
-        - this function is small and well known. 
-        
-            https://redstapler.co/javascript-weighted-random/
-        - it calculates a random number based on the weights provided
-        - this function will then return the associated move for the computer.
-  : the function call for this logic chain is simple to understand and doesn't 
-    require much modification of the already existing code.
+  A 'Scoreboard' object was used to implement game history, and to add
+  to the metaphor, several functions relevant to the UI and scoring were
+  moved into this object.
 
-  computerMove = weightedRNG(calculateWeights(ledger))
-  : the ledger is the only permanently stored data
-    - the object containing the weights is created in calculateWeights and 
-      only exists until the weightedRNG function is complete.
+  A 2D array containing both players moves and the winner, as well as primitives for player scores were added as properties to the scoreboard object. A formatted table of the game history is displayed at the end.
+      
+---History-based assistant for computer moves---
+  'homunculus' - term from alchemy for an 'artificial' being. This assistant
+  only works for the computer player, but has several unique features so it
+  was implemented as a sub-object to the computer player. 
+
+  The homunculus keeps a 'ledger' as a property. This ledger is initialized
+  with two of every move. With each round, the homunculus looks at the 
+  result, and then adds to the ledger based on the move that would have allowed 
+  the computer to win.
+
+  The homunculus calculates the weights it uses for the possible moves by how
+  often the move appears in the ledger (ex if 'rock' is the winning move 3/11 
+  times in the ledger, then the weight for 'rock' will be .27 repeating). 
+
+  These weights are collected into an object and passed to another function 
+  that generates a move based on a random number and the current weights.
+
+  The RNG function uses this formula to generate a move based on an object
+  of weights. https://redstapler.co/javascript-weighted-random/ This formula
+  requires that the sum of the weights is equal to 1, so the function that 
+  generates the weights adds the difference to a random move, if necessary.
 */
 
 const readline = require('readline-sync');
@@ -115,15 +80,34 @@ function createHomunculus() {
         this.ledger.push(bestMove[Math.round(Math.random())]);
       }
     },
+
+    getRatioForWord(array, word) {
+      let length = array.length;
+      let wordCount = array.reduce((acc, cur) => {
+        return cur === word ? (acc = acc + 1) : (acc = acc);
+      }, 0);
+      return wordCount / length;
+    },
     calculateWeights() {
       let weights = {
-        rock: 0.2,
-        paper: 0.2,
-        scissors: 0.2,
-        lizard: 0.2,
-        spock: 0.2,
+        rock: 0,
+        paper: 0,
+        scissors: 0,
+        lizard: 0,
+        spock: 0,
       };
-      // code to update weights goes here.
+      let weightTotal;
+
+      for (move in weights) {
+        weights[move] = this.getRatioForWord(this.ledger, move);
+      }
+
+      weightTotal = Object.values(weights).reduce((acc, cur) => acc + cur, 0);
+      if (weightTotal !== 1) {
+        let diff = 1 - weightTotal;
+        let index = Math.floor(Math.random() * 5);
+        weights[Object.keys(weights)[index]] += diff;
+      }
       return weights;
     },
     // https://redstapler.co/javascript-weighted-random/
@@ -275,7 +259,6 @@ const RPSGame = {
       console.clear();
       this.mainGameLoop();
       this.board.showCurrentScores();
-      console.log(this.computer.assistant.ledger); //testing
 
       if (this.board.matchWinCheck(this.maxScore)) break;
       if (!this.playAgain()) break;
