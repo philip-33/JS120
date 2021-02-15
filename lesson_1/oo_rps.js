@@ -81,9 +81,9 @@ function createHomunculus() {
       }
     },
 
-    getRatioForWord(array, word) {
-      let length = array.length;
-      let wordCount = array.reduce((acc, cur) => {
+    getRatioForWord(word) {
+      let length = this.ledger.length;
+      let wordCount = this.ledger.reduce((acc, cur) => {
         return cur === word ? (acc = acc + 1) : (acc = acc);
       }, 0);
       return wordCount / length;
@@ -99,7 +99,7 @@ function createHomunculus() {
       let weightTotal;
 
       for (move in weights) {
-        weights[move] = this.getRatioForWord(this.ledger, move);
+        weights[move] = this.getRatioForWord(move);
       }
 
       weightTotal = Object.values(weights).reduce((acc, cur) => acc + cur, 0);
@@ -113,9 +113,9 @@ function createHomunculus() {
     // https://redstapler.co/javascript-weighted-random/
     weightedRNG(weightsObj) {
       let sum = 0;
-      for (let value in weightsObj) {
-        sum += weightsObj[value];
-        if (Math.random() <= sum) return value;
+      for (move in weightsObj) {
+        sum += weightsObj[move];
+        if (Math.random() <= sum) return move;
       }
     },
   };
