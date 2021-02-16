@@ -7,8 +7,9 @@ Implement RPS using an Object Oriented structure
 OO RPS Bonus Features:
 ---Keeping Score up to 5---
   The individual scores for both players are tracked by a 'scoreboard' object,
-  which has several functions used by other bonus features. 5 wins is arbitrary, so this component was factored out to a global variable.
-  
+  which has several functions used by other bonus features. 5 wins is
+  arbitrary, so this component was factored out to a global variable.
+
   ---Adding Lizard/Spock---
   Adding two additional moves increases the complexity of checking for the
   winning move. This check was converted from a multi-line if/or monster to
@@ -20,33 +21,35 @@ OO RPS Bonus Features:
   to the metaphor, several functions relevant to the UI and scoring were
   moved into this object.
 
-  A 2D array containing both players moves and the winner, as well as primitives for player scores were added as properties to the scoreboard object. A formatted table of the game history is displayed at the end.
-      
+  A 2D array containing both players moves and the winner, as well as
+  primitives for player scores were added as properties to the scoreboard
+  object. A formatted table of the game history is displayed at the end.
+
 ---History-based assistant for computer moves---
   'homunculus' - term from alchemy for an 'artificial' being. This assistant
   only works for the computer player, but has several unique features so it
-  was implemented as a sub-object to the computer player. 
+  was implemented as a sub-object to the computer player.
 
   The homunculus keeps a 'ledger' as a property. This ledger is initialized
-  with two of every move. With each round, the homunculus looks at the 
-  result, and then adds to the ledger based on the move that would have allowed 
+  with two of every move. With each round, the homunculus looks at the
+  result, and then adds to the ledger based on the move that would have allowed
   the computer to win.
 
   The homunculus calculates the weights it uses for the possible moves by how
-  often the move appears in the ledger (ex if 'rock' is the winning move 3/11 
-  times in the ledger, then the weight for 'rock' will be .27 repeating). 
+  often the move appears in the ledger (ex if 'rock' is the winning move 3/11
+  times in the ledger, then the weight for 'rock' will be .27 repeating).
 
-  These weights are collected into an object and passed to another function 
+  These weights are collected into an object and passed to another function
   that generates a move based on a random number and the current weights.
 
   The RNG function uses this formula to generate a move based on an object
   of weights. https://redstapler.co/javascript-weighted-random/ This formula
-  requires that the sum of the weights is equal to 1, so the function that 
+  requires that the sum of the weights is equal to 1, so the function that
   generates the weights adds the difference to a random move, if necessary.
 */
 
 const readline = require('readline-sync');
-const MAX_WINS = 5;
+
 const VALID_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
 const WINNING_COMBOS = {
   rock: ['scissors', 'lizard'],
@@ -76,13 +79,13 @@ function createHomunculus() {
       // lastMove = [humanMove, computerMove, winner]
       if (lastMove[2] === 'computer') this.ledger.push(lastMove[1]);
       else {
-        let bestMove = this.losingCombos[lastMove[0]];
+        const bestMove = this.losingCombos[lastMove[0]];
         this.ledger.push(bestMove[Math.round(Math.random())]);
       }
     },
 
     getRatioForWord(word) {
-      let length = this.ledger.length;
+      const length = this.ledger.length;
       let wordCount = this.ledger.reduce((acc, cur) => {
         return cur === word ? (acc = acc + 1) : (acc = acc);
       }, 0);
@@ -211,7 +214,7 @@ const RPSGame = {
   human: createHuman(),
   computer: createComputer(),
   board: createScoreBoard(),
-  maxScore: MAX_WINS,
+  maxScore: 5,
 
   displayWelcomeMessage() {
     console.log('Welcome to RPS!');
