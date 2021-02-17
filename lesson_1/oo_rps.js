@@ -64,6 +64,7 @@ function createPlayer() {
     move: null,
   };
 }
+/* eslint-disable max-lines-per-function */
 function createHomunculus() {
   return {
     ledger: VALID_CHOICES.concat(VALID_CHOICES),
@@ -127,6 +128,7 @@ function createHomunculus() {
     },
   };
 }
+/* eslint-enable max-lines-per-function */
 
 function createHuman() {
   const playerObject = createPlayer();
@@ -166,6 +168,7 @@ function createComputer() {
   return Object.assign(playerObject, computerObject);
 }
 
+/* eslint-disable max-lines-per-function */
 function createScoreBoard() {
   return {
     history: [],
@@ -217,6 +220,7 @@ function createScoreBoard() {
     },
   };
 }
+/* eslint-enable max-lines-per-function */
 
 const RPSGame = {
   human: createHuman(),
