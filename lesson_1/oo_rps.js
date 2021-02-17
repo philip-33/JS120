@@ -85,49 +85,53 @@ function createHomunculus() {
     },
 
     getRatioForWord(word) {
-      const length = this.ledger.length;
-      let wordCount = this.ledger.reduce((acc, cur) => {
-        return cur === word ? (acc = acc + 1) : (acc = acc);
+      const { length } = this.ledger;
+      const wordCount = this.ledger.reduce((acc, cur) => {
+        if (cur === word) acc += 1; // eslint-disable-line no-param-reassign
+        return acc;
       }, 0);
       return wordCount / length;
     },
     calculateWeights() {
-      let weights = {
+      const weights = {
         rock: 0,
         paper: 0,
         scissors: 0,
         lizard: 0,
         spock: 0,
       };
-      let weightTotal;
+      let weightTotal = 0;
 
-      for (move in weights) {
+      Object.keys(weights).forEach((move) => {
         weights[move] = this.getRatioForWord(move);
-      }
+      });
 
       weightTotal = Object.values(weights).reduce((acc, cur) => acc + cur, 0);
       if (weightTotal !== 1) {
-        let diff = 1 - weightTotal;
-        let index = Math.floor(Math.random() * 5);
+        const diff = 1 - weightTotal;
+        const index = Math.floor(Math.random() * 5);
         weights[Object.keys(weights)[index]] += diff;
       }
       return weights;
     },
     // https://redstapler.co/javascript-weighted-random/
     weightedRNG(weightsObj) {
+      const keys = Object.keys(weightsObj);
       let sum = 0;
-      for (move in weightsObj) {
+      for (let idx = 0; idx < keys.length; idx += 1) {
+        const move = keys[idx];
         sum += weightsObj[move];
         if (Math.random() <= sum) return move;
       }
+      return '';
     },
   };
 }
 
 function createHuman() {
-  let playerObject = createPlayer();
+  const playerObject = createPlayer();
 
-  let humanObject = {
+  const humanObject = {
     choose() {
       let choice;
 
@@ -145,13 +149,14 @@ function createHuman() {
 }
 
 function createComputer() {
-  let playerObject = createPlayer();
+  const playerObject = createPlayer();
 
-  let computerObject = {
+  const computerObject = {
     assistant: createHomunculus(),
 
     choose() {
       this.move = this.assistant.weightedRNG(this.assistant.calculateWeights());
+      console.log('choose ~ this.move', this.move);
     },
 
     checkLastMove(lastMoveArray) {
@@ -169,32 +174,36 @@ function createScoreBoard() {
     computerScore: 0,
 
     updateBoard(lastMoveArray) {
-      let winner = lastMoveArray[2];
-      if (winner === 'human') this.humanScore++;
-      if (winner === 'computer') this.computerScore++;
+      const winner = lastMoveArray[2];
+      if (winner === 'human') this.humanScore += 1;
+      if (winner === 'computer') this.computerScore += 1;
       this.history.push(lastMoveArray);
     },
     showCurrentScores() {
       console.log('Current score:');
       console.log(
-        `\nHuman - ${this.humanScore} vs. Computer - ${this.computerScore}\n`,
+        `Human - ${this.humanScore} vs. Computer - ${this.computerScore}`,
       );
     },
     matchWinCheck(maxScore) {
+      console.log(`\nThe first to ${maxScore} wins the match.\n`);
       return this.humanScore === maxScore || this.computerScore === maxScore;
     },
+
     displayHistory() {
+      // prettier-ignore
       console.log(
-        'Player move'.padEnd(15, ' ') +
-          'Computer move'.padEnd(18, ' ') +
-          'Winner'.padEnd(15, ' '),
+        'Player move'.padEnd(15, ' ')
+          + 'Computer move'.padEnd(18, ' ')
+          + 'Winner'.padEnd(15, ' '),
       );
       console.log('='.repeat(45));
       this.history.forEach((round) => {
+        // prettier-ignore
         console.log(
-          round[0].padEnd(15, ' ') +
-            round[1].padEnd(18, ' ') +
-            round[2].padEnd(15, ' '),
+          round[0].padEnd(15, ' ')
+            + round[1].padEnd(18, ' ')
+            + round[2].padEnd(15, ' '),
         );
       });
     },
@@ -225,8 +234,8 @@ const RPSGame = {
   },
 
   mainGameLoop() {
-    let humanMove = this.human.move;
-    let computerMove = this.computer.move;
+    const humanMove = this.human.move;
+    const computerMove = this.computer.move;
     let winner = '';
 
     console.log(`You chose: ${humanMove}`);
@@ -242,17 +251,17 @@ const RPSGame = {
       winner = 'tie';
       console.log('\nThis round is a TIE\n');
     }
-    let lastMove = [humanMove, computerMove, winner];
+    const lastMove = [humanMove, computerMove, winner];
     this.computer.checkLastMove(lastMove);
     this.board.updateBoard(lastMove);
   },
 
   playAgain() {
     console.log('Would you like to play again? (y/n)');
-    let answer = readline.question();
+    const answer = readline.question();
     return answer.toLowerCase()[0] === 'y';
   },
-  //game loop
+  // game loop
   play() {
     this.displayWelcomeMessage();
     while (true) {
@@ -267,7 +276,7 @@ const RPSGame = {
       if (!this.playAgain()) break;
       console.clear();
     }
-    //endgame
+    // endgame
     console.clear();
     this.board.displayHistory();
     this.board.showWinner(this.maxScore);
