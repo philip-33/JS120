@@ -75,11 +75,11 @@ function createHomunculus() {
       spock: ['paper', 'lizard'],
     },
 
-    addWinningMoveToLedger(lastMove) {
-      // lastMove = [humanMove, computerMove, winner]
-      if (lastMove[2] === 'computer') this.ledger.push(lastMove[1]);
+    addWinningMoveToLedger(lastMoveObj) {
+      const { humanMove, computerMove, winner } = lastMoveObj;
+      if (winner === 'computer') this.ledger.push(computerMove);
       else {
-        const bestMove = this.losingCombos[lastMove[0]];
+        const bestMove = this.losingCombos[humanMove];
         this.ledger.push(bestMove[Math.round(Math.random())]);
       }
     },
@@ -156,11 +156,10 @@ function createComputer() {
 
     choose() {
       this.move = this.assistant.weightedRNG(this.assistant.calculateWeights());
-      console.log('choose ~ this.move', this.move);
     },
 
-    checkLastMove(lastMoveArray) {
-      this.assistant.addWinningMoveToLedger(lastMoveArray);
+    checkLastMove(lastMoveObj) {
+      this.assistant.addWinningMoveToLedger(lastMoveObj);
     },
   };
 
@@ -173,11 +172,11 @@ function createScoreBoard() {
     humanScore: 0,
     computerScore: 0,
 
-    updateBoard(lastMoveArray) {
-      const winner = lastMoveArray[2];
+    updateBoard(lastMoveObj) {
+      const { winner } = lastMoveObj;
       if (winner === 'human') this.humanScore += 1;
       if (winner === 'computer') this.computerScore += 1;
-      this.history.push(lastMoveArray);
+      this.history.push(Object.values(lastMoveObj));
     },
     showCurrentScores() {
       console.log('Current score:');
@@ -251,7 +250,7 @@ const RPSGame = {
       winner = 'tie';
       console.log('\nThis round is a TIE\n');
     }
-    const lastMove = [humanMove, computerMove, winner];
+    const lastMove = { humanMove, computerMove, winner };
     this.computer.checkLastMove(lastMove);
     this.board.updateBoard(lastMove);
   },
